@@ -15,4 +15,11 @@ var connPool = mysql.createPool({
     return result.insertId
   }
 
+  //createPerson called for David, Brother
   createPerson("David", "Brother")
+
+  // Get request here
+  // Put into function
+  connPool.awaitQuery("SELECT * from Person", (err, res)=>{
+    return console.log(res)
+  })
