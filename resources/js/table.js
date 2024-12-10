@@ -1,108 +1,118 @@
 window.addEventListener("DOMContentLoaded", () => {
     console.log("In table.js script");
 
-    let count = new Date("Dec 25, 2024 15:37:25").getTime();
-    let countTwo = new Date("Dec 30, 2024 15:37:25").getTime();
-    let countTre = new Date("Dec 15, 2024 15:37:25").getTime();
-    let countFour = new Date("Dec 10, 2024 15:37:25").getTime();
+    // Function to calculate and update countdown timers
+    function updateAuctionTimers(listings) {
+        listings.forEach(listing => {
+            const endTime = new Date(listing.end_time).getTime();
+            const timerElement = document.getElementById(`timerid${listing.id}`);
 
-    let x = setInterval(function () {
-        let now = new Date().getTime();
-        let distance = count - now;
-        let distwo = countTwo - now;
-        let distre = countTre - now;
-        let disFour = countFour - now;
+            console.log('End Time:', endTime); // Add logging to check if the date is correct
 
-        let d = Math.floor(distance / (1000 * 60 * 60 * 24));
-        let h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        let m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        let s = Math.floor((distance % (1000 * 60)) / 1000);
+            const updateInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = endTime - now;
 
-        let dTwo = Math.floor(distwo / (1000 * 60 * 60 * 24));
-        let hTwo = Math.floor((distwo % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        let mTwo = Math.floor((distwo % (1000 * 60 * 60)) / (1000 * 60));
-        let sTwo = Math.floor((distwo % (1000 * 60)) / 1000);
+                console.log('Distance:', distance); // Check the calculated distance
 
-        let dTre = Math.floor(distre / (1000 * 60 * 60 * 24));
-        let hTre = Math.floor((distre % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        let mTre = Math.floor((distre % (1000 * 60 * 60)) / (1000 * 60));
-        let sTre = Math.floor((distre % (1000 * 60)) / 1000);
+                if (distance < 0) {
+                    clearInterval(updateInterval);
+                    if (timerElement) {
+                        timerElement.textContent = "EXPIRED";
+                    }
+                    return;
+                }
 
-        let dFour = Math.floor(disFour / (1000 * 60 * 60 * 24));
-        let hFour = Math.floor((disFour % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        let mFour = Math.floor((disFour % (1000 * 60 * 60)) / (1000 * 60));
-        let sFour = Math.floor((disFour % (1000 * 60)) / 1000);
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        document.getElementById("timerid1").innerHTML = d + "d " + h + "h "
-            + m + "m " + s + "s ";
-        document.getElementById("timerid2").innerHTML = dTwo + "d " + hTwo + "h "
-            + mTwo + "m " + sTwo + "s ";
-        document.getElementById("timerid3").innerHTML = dTre + "d " + hTre + "h "
-            + mTre + "m " + sTre + "s ";
-        document.getElementById("timerid4").innerHTML = dFour + "d " + hFour + "h "
-            + mFour + "m " + sFour + "s ";
-
-        if (distance < 0) {
-            clearInterval(x);
-            document.getElementById("timerid1").innerHTML = "EXPIRED";
-            document.getElementById("timerid2").innerHTML = "EXPIRED";
-            document.getElementById("timerid3").innerHTML = "EXPIRED";
-            document.getElementById("timerid4").innerHTML = "EXPIRED";
-        }
-    }, 1000);
-
-
-    function setupImagePreview(imgDataId, previewId) {
-        document.getElementById(imgDataId).addEventListener('mouseover', function () {
-            const imgNode = document.createElement("img");
-            let imgData = document.getElementById(imgDataId);
-            const dataimage = imgData.dataset.image;
-            imgNode.src = dataimage;
-            imgNode.alt = "Image Preview here";
-            imgNode.width = 320;
-            imgNode.height = 270;
-            imgNode.id = "newNode";
-            const element = document.getElementById(previewId);
-            element.appendChild(imgNode);
-        });
-
-        document.getElementById(imgDataId).addEventListener("mouseout", () => {
-            const removeele = document.getElementById("newNode");
-            removeele.remove();
+                if (timerElement) {
+                    timerElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                }
+            }, 1000);
         });
     }
 
-    setupImagePreview('imgData1', 'imgPreview');
-    setupImagePreview('imgData2', 'imgPreview');
-    setupImagePreview('imgData3', 'imgPreview');
-    setupImagePreview('imgData4', 'imgPreview');
-
-    const deleteButtons = document.querySelectorAll('.bidButton');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', async function () {
-            const listingId = this.getAttribute('data-id');
-            console.log(listingId);
-            
-            try {
-                const response = await fetch('/api/delete_listing', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ listing_id: listingId }),
-                });
-
-                if (response.ok) {
-
-                    const row = document.querySelector(`#tableRow-${listingId}`);
-                    if (row) row.remove();
-                } else {
-
-                    console.error('Failed to delete listing');
-                }
-            } catch (error) {
-                console.error('Error deleting listing:', error);
+    // Function to dynamically fetch listings and setup timers
+    async function fetchListings() {
+        try {
+            const response = await fetch('/api/gallery');
+            if (response.ok) {
+                const listings = await response.json();
+                console.log('Fetched Listings:', listings); // Log the response to see what it contains
+                updateAuctionTimers(listings);
+            } else {
+                console.error('Failed to fetch listings');
             }
+        } catch (error) {
+            console.error('Error fetching listings:', error);
+        }
+    }
+
+    // Initialize image preview functionality
+    function setupImagePreview() {
+        const imgDataElements = document.querySelectorAll('[data-image]');
+        imgDataElements.forEach(imgData => {
+            imgData.addEventListener('mouseover', function () {
+                const imgNode = document.createElement("img");
+                const dataImage = imgData.dataset.image;
+                imgNode.src = dataImage;
+                imgNode.alt = "Image Preview";
+                imgNode.width = 320;
+                imgNode.height = 270;
+                imgNode.id = "newNode";
+
+                const previewElement = document.getElementById('imgPreview');
+                previewElement.innerHTML = ''; // Clear any previous previews
+                previewElement.appendChild(imgNode);
+            });
+
+            imgData.addEventListener("mouseout", () => {
+                const removeElement = document.getElementById("newNode");
+                if (removeElement) removeElement.remove();
+            });
         });
-    });
+    }
+
+    // Setup event listeners for delete buttons
+    function setupDeleteListeners() {
+        const deleteButtons = document.querySelectorAll('.bidButton');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', async function () {
+                const listingId = this.getAttribute('data-id');
+                
+                try {
+                    // Send the DELETE request
+                    const response = await fetch('/api/delete_listing', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ listing_id: listingId }),
+                    });
+    
+                    if (response.ok) {
+                        // Remove the row associated with the deleted listing
+                        const row = document.querySelector(`#tableRow-${listingId}`);
+                        if (row) {
+                            row.remove(); // Remove the row from the table immediately
+                        }
+    
+                        // Optionally, re-fetch the listings to update the table dynamically (without a page reload)
+                        fetchListings();
+                    } else {
+                        console.error('Failed to delete listing');
+                    }
+                } catch (error) {
+                    console.error('Error deleting listing:', error);
+                }
+            });
+        });
+    }
+    
+
+    // Initialize functions on page load
+    fetchListings();
+    setupImagePreview();
+    setupDeleteListeners();
 });
