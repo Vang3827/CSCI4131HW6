@@ -9,8 +9,8 @@
 -- );
 
 drop table autolist;
-drop table bids_id;
-drop table vehicle;
+drop table bids;
+drop table Vehicle;
 
 create table autolist(
     id int not null auto_increment,
@@ -53,9 +53,18 @@ create table Vehicle(
 );
 
 create table bids(
-    bids_id int not null auto_increment,
+    bidder text not null,
     amount int not null,
     comment text,
-    bidder_id
-    foreign key (biddder_id) REFERENCES Vehicle(id)
+    bid_id int,
+    foreign key (bid_id) REFERENCES Vehicle(id)
 );
+
+-------------------
+tests
+INSERT INTO Vehicle(url,description,category,date) VALUES("http://asdfasdfasdf.com", 'description goes here','Truck','09/10/2024');
+
+SELECT * from Vehicle;
+
+INSERT INTO bids VALUES("FirstBidder", 6351351,"I'm the first one",1);
+INSERT INTO bids VALUES("SecondBidder", 7778484,"Second!!!!!!!!!!!",1);
