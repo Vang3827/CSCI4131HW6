@@ -16,8 +16,8 @@ async function addListing(data) {
   // you CAN change the parameters for this function.
   const { title, url, description, category, sale_date, end_time } = data;
   const result = await connPool.awaitQuery('INSERT INTO Vehicle(title,url,description,category,sale_date,end_time) values (?,?,?,?,?,?)', [title, url, description, category, sale_date, end_time]);
-  console.log("Insert Result ->>>>", result);
-  console.log("chekcing to see what data.insertID shows", result.insertId);
+  // console.log("Insert Result ->>>>", result);
+  // console.log("chekcing to see what data.insertID shows", result.insertId);
   return result.insertId
 }
 async function deleteListing(id) {
@@ -32,7 +32,7 @@ async function deleteListing(id) {
     // Delete the bids associated with the vehicle first
     await connPool.awaitQuery(deleteBidsQuery, [id]);
 
-    // Now delete the vehicle
+    // delete the vehicle
     const result = await connPool.awaitQuery(deleteVehicleQuery, [id]);
 
     if (result.affectedRows === 0) {
@@ -65,10 +65,10 @@ async function getListing(id) {
     `;
     const bids = await connPool.awaitQuery(bidsQuery, [id]);
     //Should console.log Ford Mustang along with bids with bid_id 2
-    console.log({
-      listing: listing,
-      bids: bids
-    })
+    // console.log({
+    //   listing: listing,
+    //   bids: bids
+    // })
 
     // Return the listing with bids
     return {
@@ -197,7 +197,7 @@ async function getBids(listing_id) {
     `;
 
     const bids = await connPool.awaitQuery(query, [listing_id]);
-    console.log(bids);
+    // console.log(bids);
 
     return bids;
   } catch (error) {
@@ -220,7 +220,7 @@ async function getHighestBid(listing_id) {
 
     const [result] = await connPool.awaitQuery(query, [listing_id]);
 
-    console.log(result.highestBid);
+    // console.log(result.highestBid);
 
     return result.highestBid || 0;
   } catch (error) {

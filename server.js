@@ -34,6 +34,14 @@ const checkRateLimit = () => {
   return { passed: true };
 };
 
+//Log incoming requests
+app.use((req, res, next) => {
+  const statusCode = res.statusCode;
+  console.log(`${req.method} ${req.originalUrl} ${statusCode}`);
+  next();
+});
+
+
 app.use('/api/', (req, res, next) => {
   const { passed, retryAfter } = checkRateLimit();
 
@@ -65,13 +73,15 @@ app.get("/gallery", async (req, res) => {
 });
 
 app.get('/api/gallery', async (req, res) => {
-  const queryTerm = req.query.query || '';  // Get query parameter for search
-  const category = req.query.category || ''; // Get category parameter
+  // Get query parameter for search
+  const queryTerm = req.query.query || '';
+  // Get category parameter
+  const category = req.query.category || '';
 
   try {
-    // Fetch listings from the database using getGallery
+    // Fetch listings from the database
     const listings = await getGallery(queryTerm, category);
-    res.json(listings);  // Send the listings as JSON
+    res.json(listings);
   } catch (error) {
     console.error("Error fetching gallery:", error);
     res.status(500).json({ message: 'Error fetching gallery' });
@@ -92,7 +102,7 @@ app.get("/listing/:id", async (req, res) => {
 });
 
 app.get('/create', (req, res) => {
-  res.render('create'); 
+  res.render('create');
 });
 
 
